@@ -18,6 +18,9 @@ class ProgressArc extends Component {
     percentComplete: PropTypes.number
   }
 
+  // While React is updating the state and ProgressArc component as we would expect,
+  // the SVG does not reflect that change. This is because SVG’s don’t respond to updates.
+  // So we have to remove the initial SVG and re-draw a new one.
   componentDidMount() {
     this.drawArc();
   }
@@ -29,6 +32,7 @@ class ProgressArc extends Component {
     const context = this.setContext();
     this.setBackground(context);
     this.setForeground(context);
+    this.updatePercent(context);
   }
 
   redrawArc() {
@@ -37,6 +41,29 @@ class ProgressArc extends Component {
     console.log(context)
     context.remove();
     this.drawArc();
+  }
+
+  // responsible for 'animating' the progress arc
+  updatePercent(context) {
+    const { duration, percentComplete } = this.props;
+    return this.setForeground(context).transition()
+      .duration(duration)
+      .call(this.arcTween, this.TAU * percentComplete, this.arc())
+  }
+
+  // this really is the animating magic function
+  // original tut: https://hackernoon.com/building-d3-components-with-react-7510e4743288
+  // Bostocks' attrTween example: http://bl.ocks.org/cloudshapes/5662135
+  arcTween(transition, newAngle, arc) {
+      transition.attrTween('d', (d) => {
+        const interpolate = d3.interpolate(d.endAngle, newAngle);
+        const newArc = d;
+
+        return (t) => {
+          newArc.endAngle = interpolate(t);
+          return arc(newArc);
+        }
+      })
   }
 
   setBackground(context) {
@@ -52,7 +79,7 @@ class ProgressArc extends Component {
     const { foregroundColor, percentComplete } = this.props;
 
     return context.append('path')
-      .datum({ endAngle: this.TAU * percentComplete })
+      .datum({ endAngle: 0 })
       .style('fill', foregroundColor)
       .attr('d', this.arc())
   }

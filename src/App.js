@@ -27,6 +27,7 @@ class App extends Component {
           backgroundColor='#e6e6e6'
           foregroundColor='#00ff00'
           percentComplete={percentComplete}
+          duration={2000}
         />
       </div>
     )
