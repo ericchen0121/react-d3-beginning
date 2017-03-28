@@ -2,7 +2,10 @@ import React, { Component } from 'react';
 import * as d3 from 'd3';
 
 class ProgressArc extends Component {
+
+  // variables and constants
   displayName: 'ProgressArc';
+  TAU = Math.PI * 2;
 
   propTypes: {
     id: PropTypes.string,
@@ -16,13 +19,25 @@ class ProgressArc extends Component {
   }
 
   componentDidMount() {
+    this.drawArc();
+  }
+  componentDidUpdate() {
+    this.redrawArc();
+  }
+
+  drawArc() {
     const context = this.setContext();
     this.setBackground(context);
     this.setForeground(context);
   }
 
-  // variables and constants
-  TAU = Math.PI * 2;
+  redrawArc() {
+    console.log('redrawing arc', this.props)
+    const context = d3.select(`#${this.props.id}`);
+    console.log(context)
+    context.remove();
+    this.drawArc();
+  }
 
   setBackground(context) {
       const { backgroundColor } = this.props;
@@ -34,10 +49,10 @@ class ProgressArc extends Component {
   }
 
   setForeground(context) {
-    const { foregroundColor } = this.props;
+    const { foregroundColor, percentComplete } = this.props;
 
     return context.append('path')
-      .datum({ endAngle: this.TAU * 0.3 })
+      .datum({ endAngle: this.TAU * percentComplete })
       .style('fill', foregroundColor)
       .attr('d', this.arc())
   }
